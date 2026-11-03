@@ -42,7 +42,7 @@
     /* Centered Header */
     .header {
       text-align: center;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
     }
     .header img {
       width: 100px;
@@ -63,47 +63,44 @@
       margin: 0;
     }
 
-    /* Controls Toolbar */
-    .toolbar-panel {
+    /* Centered Single-Row Control Bar */
+    .controls-wrapper {
       background: #f1f5f9;
-      padding: 14px 18px;
+      padding: 16px 20px;
       border-radius: 6px;
       border: 1px solid var(--border-light);
-      margin-bottom: 24px;
+      margin: 0 auto 24px auto;
       display: flex;
-      align-items: flex-end;
-      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    .toolbar-group {
-      display: flex;
-      flex-direction: column;
-      min-width: 180px;
-    }
-    .toolbar-group label {
-      font-size: 0.8em;
+    .control-label {
+      font-size: 0.9em;
       font-weight: 700;
       color: #334155;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin: 0;
+      white-space: nowrap;
     }
-    .toolbar-group select {
+    .year-select {
       height: 42px;
-      padding: 0 12px;
+      padding: 0 14px;
       border: 1px solid var(--border);
       border-radius: 5px;
       background: #ffffff;
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 600;
+      color: var(--text);
       outline: none;
+      min-width: 190px;
     }
-    .toolbar-group select:focus {
+    .year-select:focus {
       border-color: var(--primary);
     }
     .btn-generate {
       height: 42px;
-      padding: 0 24px;
+      padding: 0 22px;
       background-color: var(--primary);
       color: white;
       border: none;
@@ -114,16 +111,24 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
       transition: background 0.2s;
     }
-    .btn-generate:hover { background-color: var(--primary-dark); }
+    .btn-generate:hover { 
+      background-color: var(--primary-dark); 
+    }
+
+    /* Tables Container (Hidden on initial load) */
+    #reportResultsArea {
+      display: none;
+    }
 
     /* Section Headings */
     .section-title {
       font-size: 1.25em;
       font-weight: 700;
       color: #1e293b;
-      margin-top: 30px;
+      margin-top: 26px;
       margin-bottom: 12px;
       border-bottom: 2px solid var(--primary);
       padding-bottom: 6px;
@@ -211,6 +216,17 @@
       color: var(--text-muted);
       text-align: center;
     }
+
+    @media (max-width: 768px) {
+      .controls-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .year-select, .btn-generate {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -224,18 +240,17 @@
     <h2>Haemodialysis Unit, Sarawak General Hospital</h2>
   </div>
 
-  <!-- Controls Toolbar -->
-  <div class="toolbar-panel">
-    <div class="toolbar-group">
-      <label for="yearSelector">Select Year</label>
-      <select id="yearSelector">
-        <option value="2026" selected>2026</option>
-        <option value="2027">2027</option>
-        <option value="2028">2028</option>
-        <option value="2029">2029</option>
-        <option value="2030">2030</option>
-      </select>
-    </div>
+  <!-- Centered Row: Label + Dropdown + Button -->
+  <div class="controls-wrapper">
+    <label class="control-label" for="yearSelector">Select Year:</label>
+    <select id="yearSelector" class="year-select">
+      <option value="" disabled selected>-- Select Year --</option>
+      <option value="2026">2026</option>
+      <option value="2027">2027</option>
+      <option value="2028">2028</option>
+      <option value="2029">2029</option>
+      <option value="2030">2030</option>
+    </select>
     <button type="button" class="btn-generate" id="btnGenerate" onclick="generateYearlyReport()">
       📊 Generate Report
     </button>
@@ -243,60 +258,61 @@
 
   <div id="message-area"></div>
 
-  <!-- Table 1: Haemodialysis Machine -->
-  <div class="section-title">
-    <span>Haemodialysis Machine</span>
-    <span class="section-count" id="hdCount">0 units</span>
-  </div>
-  <div class="table-wrapper">
-    <table class="data-table" id="hdTable">
-      <thead>
-        <tr>
-          <th>ASSET LABEL</th>
-          <th>ASIS NO</th>
-          <th>KEW.PA NO</th>
-          <th>MODEL / BRAND</th>
-          <th>Age (Year of Made)</th>
-          <th>REMARKS</th>
-          <th>Current Status</th>
-          <th class="td-center">Total Breakdown</th>
-          <th class="td-center">Cumulative Downtime</th>
-          <th class="td-center">Mean Downtime (MTTR)</th>
-          <th>PPM Surveillance</th>
-        </tr>
-      </thead>
-      <tbody id="hdTableBody">
-        <tr><td colspan="11" class="td-center" style="color: var(--text-muted); padding: 20px;">Click "Generate Report" to load fleet data.</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- Results Container: Hidden on initial load -->
+  <div id="reportResultsArea">
+    
+    <!-- Table 1: Haemodialysis Machine -->
+    <div class="section-title">
+      <span>Haemodialysis Machine</span>
+      <span class="section-count" id="hdCount">0 units</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table" id="hdTable">
+        <thead>
+          <tr>
+            <th>ASSET LABEL</th>
+            <th>ASIS NO</th>
+            <th>KEW.PA NO</th>
+            <th>MODEL / BRAND</th>
+            <th>Age (Year of Made)</th>
+            <th>REMARKS</th>
+            <th>Current Status</th>
+            <th class="td-center">Total Breakdown</th>
+            <th class="td-center">Cumulative Downtime</th>
+            <th class="td-center">Mean Downtime (MTTR)</th>
+            <th>PPM Surveillance</th>
+          </tr>
+        </thead>
+        <tbody id="hdTableBody"></tbody>
+      </table>
+    </div>
 
-  <!-- Table 2: Portable RO System -->
-  <div class="section-title">
-    <span>Portable RO System</span>
-    <span class="section-count" id="proCount">0 units</span>
-  </div>
-  <div class="table-wrapper">
-    <table class="data-table" id="proTable">
-      <thead>
-        <tr>
-          <th>ASSET LABEL</th>
-          <th>ASIS NO</th>
-          <th>KEW.PA NO</th>
-          <th>MODEL / BRAND</th>
-          <th>Age (Year of Made)</th>
-          <th>REMARKS</th>
-          <th>Current Status</th>
-          <th class="td-center">Total Breakdown</th>
-          <th class="td-center">Cumulative Downtime</th>
-          <th class="td-center">Mean Downtime (MTTR)</th>
-          <th>PPM Surveillance</th>
-        </tr>
-      </thead>
-      <tbody id="proTableBody">
-        <tr><td colspan="11" class="td-center" style="color: var(--text-muted); padding: 20px;">Click "Generate Report" to load fleet data.</td></tr>
-      </tbody>
-    </table>
+    <!-- Table 2: Portable RO System -->
+    <div class="section-title">
+      <span>Portable RO System</span>
+      <span class="section-count" id="proCount">0 units</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table" id="proTable">
+        <thead>
+          <tr>
+            <th>ASSET LABEL</th>
+            <th>ASIS NO</th>
+            <th>KEW.PA NO</th>
+            <th>MODEL / BRAND</th>
+            <th>Age (Year of Made)</th>
+            <th>REMARKS</th>
+            <th>Current Status</th>
+            <th class="td-center">Total Breakdown</th>
+            <th class="td-center">Cumulative Downtime</th>
+            <th class="td-center">Mean Downtime (MTTR)</th>
+            <th>PPM Surveillance</th>
+          </tr>
+        </thead>
+        <tbody id="proTableBody"></tbody>
+      </table>
+    </div>
+
   </div>
 
   <!-- Standard Institutional Footer -->
@@ -309,18 +325,17 @@
 <script>
   const SCRIPT_API_URL = "https://script.google.com/macros/s/AKfycbxiGHd76lacVTCl7WmdQQphPzCbE25SoTiksAI1PeaH8YU01NC69radvnN-tQYcjtEk/exec";
 
-  window.addEventListener("DOMContentLoaded", () => {
-    // Auto-generate for current year on first load
-    generateYearlyReport();
-  });
-
   function generateYearlyReport() {
     const year = document.getElementById("yearSelector").value;
-    const btn = document.getElementById("btnGenerate");
+    if (!year) {
+      alert("Please select a year from the dropdown first.");
+      return;
+    }
 
+    const btn = document.getElementById("btnGenerate");
     btn.disabled = true;
     btn.textContent = "Calculating Metrics...";
-    showMessage(`Fetching and calculating fleet statistics for year ${year}...`, "success");
+    showMessage(`Fetching and compiling fleet statistics for ${year}...`, "success");
 
     fetch(`${SCRIPT_API_URL}?action=getYearlySummary&year=${encodeURIComponent(year)}`)
       .then(res => res.json())
@@ -332,6 +347,8 @@
           document.getElementById("message-area").style.display = "none";
           renderFleetTable("hdTableBody", "hdCount", res.hdFleet || []);
           renderFleetTable("proTableBody", "proCount", res.proFleet || []);
+          // Reveal the report results
+          document.getElementById("reportResultsArea").style.display = "block";
         } else {
           showMessage("Error calculating summary: " + res.error, "error");
         }
@@ -353,13 +370,13 @@
     }
 
     tbody.innerHTML = fleetList.map(item => {
-      // 1. Status Badge
+      // Status Badge
       let statusBadge = `<span class="badge badge-ready">Ready to Use</span>`;
       if (item.currentStatus && item.currentStatus !== "Ready to Use") {
         statusBadge = `<span class="badge badge-fault">${item.currentStatus}</span>`;
       }
 
-      // 2. PPM Surveillance Badge
+      // PPM Surveillance Badge
       let ppmBadge = `<span class="badge badge-info">${item.ppmSurveillance}</span>`;
       if (item.ppmSurveillance.includes("Compliant")) {
         ppmBadge = `<span class="badge badge-ready">${item.ppmSurveillance}</span>`;

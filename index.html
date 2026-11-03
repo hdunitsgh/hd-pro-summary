@@ -63,29 +63,38 @@
       margin: 0;
     }
 
-    /* Centered Single-Row Control Bar */
-    .controls-wrapper {
+    /* Parameter Filter Box */
+    .filter-panel {
       background: #f1f5f9;
-      padding: 16px 20px;
+      padding: 18px 20px;
       border-radius: 6px;
       border: 1px solid var(--border-light);
       margin: 0 auto 24px auto;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      max-width: 720px;
     }
-    .control-label {
-      font-size: 0.9em;
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-group label {
+      font-size: 0.82em;
       font-weight: 700;
       color: #334155;
-      margin: 0;
-      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
     }
-    .year-select {
+    
+    /* Styled Select with Grey Placeholder */
+    .custom-select {
       height: 42px;
-      padding: 0 14px;
+      padding: 0 12px;
       border: 1px solid var(--border);
       border-radius: 5px;
       background: #ffffff;
@@ -93,34 +102,40 @@
       font-weight: 600;
       color: var(--text);
       outline: none;
-      min-width: 190px;
+      width: 100%;
     }
-    .year-select:focus {
+    .custom-select:focus {
       border-color: var(--primary);
     }
+    .custom-select option {
+      color: var(--text);
+    }
+    .custom-select option[value=""] {
+      color: #94a3b8;
+    }
+    /* When default empty value is selected, color is muted */
+    .custom-select.placeholder-active {
+      color: #94a3b8;
+    }
+
     .btn-generate {
-      height: 42px;
-      padding: 0 22px;
+      height: 44px;
+      width: 100%;
       background-color: var(--primary);
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 14.5px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      white-space: nowrap;
+      justify-content: center;
+      gap: 8px;
       transition: background 0.2s;
     }
     .btn-generate:hover { 
       background-color: var(--primary-dark); 
-    }
-
-    /* Tables Container (Hidden on initial load) */
-    #reportResultsArea {
-      display: none;
     }
 
     /* Section Headings */
@@ -218,13 +233,9 @@
     }
 
     @media (max-width: 768px) {
-      .controls-wrapper {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .year-select, .btn-generate {
-        width: 100%;
-        justify-content: center;
+      .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
       }
     }
   </style>
@@ -240,17 +251,29 @@
     <h2>Haemodialysis Unit, Sarawak General Hospital</h2>
   </div>
 
-  <!-- Centered Row: Label + Dropdown + Button -->
-  <div class="controls-wrapper">
-    <label class="control-label" for="yearSelector">Select Year:</label>
-    <select id="yearSelector" class="year-select">
-      <option value="" disabled selected>-- Select Year --</option>
-      <option value="2026">2026</option>
-      <option value="2027">2027</option>
-      <option value="2028">2028</option>
-      <option value="2029">2029</option>
-      <option value="2030">2030</option>
-    </select>
+  <!-- Filter Controls: 2 Columns + Generate Button -->
+  <div class="filter-panel">
+    <div class="filter-grid">
+      <div class="filter-group">
+        <label for="yearSelector">Select Year:</label>
+        <select id="yearSelector" class="custom-select placeholder-active" onchange="handleSelectChange(this)">
+          <option value="" disabled selected style="color: #94a3b8;">-- Select Year --</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+          <option value="2029">2029</option>
+          <option value="2030">2030</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="typeSelector">Asset Type:</label>
+        <select id="typeSelector" class="custom-select placeholder-active" onchange="handleSelectChange(this)">
+          <option value="" disabled selected style="color: #94a3b8;">-- Select Asset Type --</option>
+          <option value="HD">Haemodialysis Machine</option>
+          <option value="PRO">Portable RO System</option>
+        </select>
+      </div>
+    </div>
     <button type="button" class="btn-generate" id="btnGenerate" onclick="generateYearlyReport()">
       📊 Generate Report
     </button>
@@ -258,12 +281,10 @@
 
   <div id="message-area"></div>
 
-  <!-- Results Container: Hidden on initial load -->
-  <div id="reportResultsArea">
-    
-    <!-- Table 1: Haemodialysis Machine -->
+  <!-- Single Selected Table Container (Hidden by default) -->
+  <div id="tableContainerHD" style="display: none;">
     <div class="section-title">
-      <span>Haemodialysis Machine</span>
+      <span>Haemodialysis Machine Fleet Summary</span>
       <span class="section-count" id="hdCount">0 units</span>
     </div>
     <div class="table-wrapper">
@@ -286,10 +307,11 @@
         <tbody id="hdTableBody"></tbody>
       </table>
     </div>
+  </div>
 
-    <!-- Table 2: Portable RO System -->
+  <div id="tableContainerPRO" style="display: none;">
     <div class="section-title">
-      <span>Portable RO System</span>
+      <span>Portable RO System Fleet Summary</span>
       <span class="section-count" id="proCount">0 units</span>
     </div>
     <div class="table-wrapper">
@@ -312,7 +334,6 @@
         <tbody id="proTableBody"></tbody>
       </table>
     </div>
-
   </div>
 
   <!-- Standard Institutional Footer -->
@@ -325,17 +346,36 @@
 <script>
   const SCRIPT_API_URL = "https://script.google.com/macros/s/AKfycbxiGHd76lacVTCl7WmdQQphPzCbE25SoTiksAI1PeaH8YU01NC69radvnN-tQYcjtEk/exec";
 
+  // Toggle placeholder text color when user selects an option
+  function handleSelectChange(selectElem) {
+    if (selectElem.value !== "") {
+      selectElem.classList.remove("placeholder-active");
+    } else {
+      selectElem.classList.add("placeholder-active");
+    }
+  }
+
   function generateYearlyReport() {
     const year = document.getElementById("yearSelector").value;
+    const assetType = document.getElementById("typeSelector").value;
+
     if (!year) {
-      alert("Please select a year from the dropdown first.");
+      alert("Please select a year from the dropdown.");
+      return;
+    }
+    if (!assetType) {
+      alert("Please select an Asset Type (Haemodialysis Machine or Portable RO).");
       return;
     }
 
     const btn = document.getElementById("btnGenerate");
     btn.disabled = true;
     btn.textContent = "Calculating Metrics...";
-    showMessage(`Fetching and compiling fleet statistics for ${year}...`, "success");
+    showMessage(`Compiling fleet statistics for ${year}...`, "success");
+
+    // Hide both tables during reload
+    document.getElementById("tableContainerHD").style.display = "none";
+    document.getElementById("tableContainerPRO").style.display = "none";
 
     fetch(`${SCRIPT_API_URL}?action=getYearlySummary&year=${encodeURIComponent(year)}`)
       .then(res => res.json())
@@ -345,12 +385,16 @@
 
         if (res.success) {
           document.getElementById("message-area").style.display = "none";
-          renderFleetTable("hdTableBody", "hdCount", res.hdFleet || []);
-          renderFleetTable("proTableBody", "proCount", res.proFleet || []);
-          // Reveal the report results
-          document.getElementById("reportResultsArea").style.display = "block";
+
+          if (assetType === "HD") {
+            renderFleetTable("hdTableBody", "hdCount", res.hdFleet || []);
+            document.getElementById("tableContainerHD").style.display = "block";
+          } else if (assetType === "PRO") {
+            renderFleetTable("proTableBody", "proCount", res.proFleet || []);
+            document.getElementById("tableContainerPRO").style.display = "block";
+          }
         } else {
-          showMessage("Error calculating summary: " + res.error, "error");
+          showMessage("Error compiling summary: " + res.error, "error");
         }
       })
       .catch(err => {
@@ -365,18 +409,18 @@
     document.getElementById(countId).textContent = `${fleetList.length} units`;
 
     if (fleetList.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="11" class="td-center" style="color: var(--text-muted); padding: 18px;">No asset records registered under this category.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="td-center" style="color: var(--text-muted); padding: 18px;">No registered asset records found under this category.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = fleetList.map(item => {
-      // Status Badge
+      // 1. Status Badge
       let statusBadge = `<span class="badge badge-ready">Ready to Use</span>`;
       if (item.currentStatus && item.currentStatus !== "Ready to Use") {
         statusBadge = `<span class="badge badge-fault">${item.currentStatus}</span>`;
       }
 
-      // PPM Surveillance Badge
+      // 2. PPM Surveillance Badge
       let ppmBadge = `<span class="badge badge-info">${item.ppmSurveillance}</span>`;
       if (item.ppmSurveillance.includes("Compliant")) {
         ppmBadge = `<span class="badge badge-ready">${item.ppmSurveillance}</span>`;
